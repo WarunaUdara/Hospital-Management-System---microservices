@@ -1,0 +1,23 @@
+server:
+  port: 8080
+# UNCOMMENT THE FOLLOWING LINES TO USE IN MEMORY H2 DATABASE
+spring:
+#  h2:
+#    console:
+#      path: /h2-console
+#  datasource:
+#    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+#    driver-class-name: org.h2.Driver
+#    username: admin
+#    password: password
+#  jpa:
+#    database-platform: org.hibernate.dialect.H2Dialect
+#    show-sql: true
+#    hibernate:
+#      ddl-auto: update
+#  sql:
+#    init:
+#      mode: always
+Logging:
+  level:
+    ROOT: INFO
