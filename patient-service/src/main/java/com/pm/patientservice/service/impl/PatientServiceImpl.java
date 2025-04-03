@@ -6,6 +6,8 @@ import com.pm.patientservice.dto.PatientResponseDTO;
 import com.pm.patientservice.entity.PatientEntity;
 import com.pm.patientservice.exception.EmailAlreadyExistException;
 import com.pm.patientservice.exception.PatientNotFoundException;
+import com.pm.patientservice.grpc.BillingServiceGrpcClient;
+import com.pm.patientservice.kafka.KafkaProducer;
 import com.pm.patientservice.repository.PatientJpaRepository;
 import com.pm.patientservice.service.PatientService;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +26,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PatientServiceImpl implements PatientService {
     private final PatientJpaRepository patientJpaRepository;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final BillingServiceGrpcClient billingServiceGrpcClient;
     private static final Logger log = LoggerFactory.getLogger(PatientServiceImpl.class);
+    private final KafkaProducer kafkaProducer;
 
     @Override
     public List<PatientResponseDTO> getAllPatients() {
@@ -43,6 +46,9 @@ public class PatientServiceImpl implements PatientService {
             PatientEntity patientEntity = mapToEntity(patientRequestDTO);
             PatientEntity savedPatient = patientJpaRepository.save(patientEntity);
             log.info("Successfully created patient with ID: {}", savedPatient.getId());
+            billingServiceGrpcClient.createBillingAccount(savedPatient.getId().toString(),
+                    savedPatient.getName(), savedPatient.getEmail());
+            kafkaProducer.sendEvent(savedPatient);
             return mapToPatientDTO(savedPatient);
         } catch (DateTimeParseException e) {
             log.error("Invalid date format: {}", e.getMessage());
